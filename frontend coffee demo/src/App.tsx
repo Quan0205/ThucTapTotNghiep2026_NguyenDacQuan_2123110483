@@ -6,7 +6,7 @@ import { routes as adminRoutes } from './config/routes'
 import { HomePage } from './pages/HomePage'
 import { CareersPage } from './pages/CareersPage'
 import { ForbiddenPage } from './pages/ForbiddenPage'
-import { EmployeeShiftWeekPage } from './pages/EmployeeShiftWeekPage'
+import { EmployeePortalPage } from './pages/EmployeePortalPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -23,7 +23,7 @@ function App() {
             path={paths.employeePortal}
             element={
               <RequirePermission redirectTo={paths.userLogin} permissions={['self.shift.view']}>
-                <EmployeeShiftWeekPage />
+                <EmployeePortalPage />
               </RequirePermission>
             }
           />

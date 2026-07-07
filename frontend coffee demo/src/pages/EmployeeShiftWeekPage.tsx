@@ -37,6 +37,7 @@ const fallbackOverview: SelfPortalOverview = {
     absentCount: 0,
     workingMinutes: 0,
   },
+  leaveBalance: { year: new Date().getFullYear(), annualAllowance: 12, usedDays: 0, pendingDays: 0, remainingDays: 12 },
 }
 
 function toDateKey(date: Date) {

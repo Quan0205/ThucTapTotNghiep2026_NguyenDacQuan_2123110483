@@ -533,10 +533,19 @@ export interface SelfPortalSummary {
   workingMinutes: number
 }
 
+export interface SelfLeaveBalance {
+  year: number
+  annualAllowance: number
+  usedDays: number
+  pendingDays: number
+  remainingDays: number
+}
+
 export interface SelfPortalOverview {
   profile: SelfPortalProfile
   schedules: SelfPortalSchedule[]
   summary: SelfPortalSummary
+  leaveBalance: SelfLeaveBalance
 }
 
 export interface SelfPayrollSummary {

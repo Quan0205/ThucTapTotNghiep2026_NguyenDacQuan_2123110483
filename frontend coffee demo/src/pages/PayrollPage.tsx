@@ -347,7 +347,7 @@ export function PayrollPage() {
               label: 'Thao tác',
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => navigate(`/payroll-details?payrollId=${row.id}`)}>Chi tiết</Button>
+                  <Button variant="secondary" onClick={() => navigate(`/admin/payroll-details?payrollId=${row.id}`)}>Chi tiết</Button>
                   {row.status === 1 && !row.isClosed ? <Button variant="secondary" onClick={() => openEdit(row)}>Sửa</Button> : null}
                   {row.status === 1 && !row.isClosed ? <Button variant="danger" onClick={() => void remove(row)}>Xóa</Button> : null}
                   {(row.status === 1 || row.status === 2) && !row.isClosed ? <Button onClick={() => void approve(row)}>Duyệt</Button> : null}

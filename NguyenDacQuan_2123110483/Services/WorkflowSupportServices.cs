@@ -43,6 +43,8 @@ public interface IReportService
 
 public sealed class LeaveRequestService : ILeaveRequestService
 {
+    private const decimal AnnualLeaveAllowance = 12m;
+
     private readonly AppDbContext _context;
     private readonly ICurrentUserService _currentUserService;
 
@@ -113,9 +115,23 @@ public sealed class LeaveRequestService : ILeaveRequestService
     {
         if (dto.EmployeeId <= 0 || string.IsNullOrWhiteSpace(dto.LeaveType)) return ("EmployeeId and LeaveType are required.", StatusCodes.Status400BadRequest);
         if (dto.EndDate.Date < dto.StartDate.Date) return ("EndDate must be greater than or equal to StartDate.", StatusCodes.Status400BadRequest);
+        if (dto.StartDate.Year != dto.EndDate.Year) return ("Leave request must be within the same year.", StatusCodes.Status400BadRequest);
         if (!await _context.Employees.AnyAsync(x => x.Id == dto.EmployeeId && x.IsActive, cancellationToken)) return ("Active employee not found.", StatusCodes.Status400BadRequest);
         var overlap = await _context.LeaveRequests.AnyAsync(x => x.Id != requestId && x.EmployeeId == dto.EmployeeId && x.Status != LeaveRequestStatus.Cancelled && x.Status != LeaveRequestStatus.Rejected && x.StartDate <= dto.EndDate.Date && x.EndDate >= dto.StartDate.Date, cancellationToken);
-        return overlap ? ("Employee already has a leave request in this period.", StatusCodes.Status409Conflict) : null;
+        if (overlap) return ("Employee already has a leave request in this period.", StatusCodes.Status409Conflict);
+
+        var requestedDays = (decimal)(dto.EndDate.Date - dto.StartDate.Date).TotalDays + 1;
+        var usedOrPendingDays = await _context.LeaveRequests
+            .Where(x =>
+                x.Id != requestId &&
+                x.EmployeeId == dto.EmployeeId &&
+                x.StartDate.Year == dto.StartDate.Year &&
+                (x.Status == LeaveRequestStatus.Approved || x.Status == LeaveRequestStatus.Pending))
+            .SumAsync(x => x.TotalDays, cancellationToken);
+        var remainingDays = AnnualLeaveAllowance - usedOrPendingDays;
+        return requestedDays > remainingDays
+            ? ($"Leave request exceeds annual allowance. Remaining leave days: {Math.Max(0m, remainingDays):0.##}.", StatusCodes.Status409Conflict)
+            : null;
     }
 
     private async Task<(bool Success, string? Error, int? StatusCode)> DecideAsync(int id, LeaveRequestStatus status, string? note, CancellationToken cancellationToken)

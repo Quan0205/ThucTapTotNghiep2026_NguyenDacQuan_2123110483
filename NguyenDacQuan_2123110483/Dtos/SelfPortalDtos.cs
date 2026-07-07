@@ -36,10 +36,18 @@ public sealed record SelfPortalSummaryDto(
     int AbsentCount,
     int WorkingMinutes);
 
+public sealed record SelfLeaveBalanceDto(
+    int Year,
+    decimal AnnualAllowance,
+    decimal UsedDays,
+    decimal PendingDays,
+    decimal RemainingDays);
+
 public sealed record SelfPortalResponseDto(
     SelfPortalProfileDto Profile,
     IReadOnlyList<SelfPortalScheduleDto> Schedules,
-    SelfPortalSummaryDto Summary);
+    SelfPortalSummaryDto Summary,
+    SelfLeaveBalanceDto LeaveBalance);
 
 public sealed record SelfPayrollSummaryDto(
     int Id,
@@ -65,4 +73,3 @@ public sealed record SelfAttendanceResultDto(
     int WorkingMinutes,
     int OvertimeMinutes,
     int EarlyLeaveMinutes);
-

@@ -12,6 +12,8 @@ namespace CoffeeHRM.Controllers;
 [PermissionAuthorize(PermissionCodes.ProfileView)]
 public class SelfPortalController : ControllerBase
 {
+    private const decimal AnnualLeaveAllowance = 12m;
+
     private readonly AppDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAttendanceService _attendanceService;
@@ -52,6 +54,15 @@ public class SelfPortalController : ControllerBase
             .Where(x => x.EmployeeId == employee.Id && x.AttendanceDate >= startOfMonth && x.AttendanceDate < endOfMonth)
             .ToListAsync(cancellationToken);
 
+        var leaveStart = new DateTime(DateTime.Now.Year, 1, 1);
+        var leaveEnd = leaveStart.AddYears(1);
+        var leaveRequests = await _context.LeaveRequests
+            .AsNoTracking()
+            .Where(x => x.EmployeeId == employee.Id && x.StartDate >= leaveStart && x.StartDate < leaveEnd)
+            .ToListAsync(cancellationToken);
+        var approvedLeaveDays = leaveRequests.Where(x => x.Status == LeaveRequestStatus.Approved).Sum(x => x.TotalDays);
+        var pendingLeaveDays = leaveRequests.Where(x => x.Status == LeaveRequestStatus.Pending).Sum(x => x.TotalDays);
+
         var summary = new SelfPortalSummaryDto(
             DateTime.Now.Month,
             DateTime.Now.Year,
@@ -74,7 +85,13 @@ public class SelfPortalController : ControllerBase
                 account.SystemRole?.Name ?? account.SystemRole?.Code,
                 account.LastLoginAt),
             schedules.Select(MapSchedule).ToList(),
-            summary));
+            summary,
+            new SelfLeaveBalanceDto(
+                DateTime.Now.Year,
+                AnnualLeaveAllowance,
+                approvedLeaveDays,
+                pendingLeaveDays,
+                Math.Max(0m, AnnualLeaveAllowance - approvedLeaveDays - pendingLeaveDays))));
     }
 
     [HttpGet("payrolls")]
@@ -200,4 +217,3 @@ public class SelfPortalController : ControllerBase
             schedule.Attendance?.CheckOutAt);
     }
 }
-

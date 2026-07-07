@@ -38,6 +38,7 @@ const fallbackOverview: SelfPortalOverview = {
     { id: 2, scheduleDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), shiftId: 2, shiftCode: 'AFTERNOON', shiftName: 'Ca chiều', startTime: '13:00:00', endTime: '21:00:00', graceMinutes: 10, note: 'Hỗ trợ quầy thu ngân', attendanceId: null, attendanceStatus: null, checkInAt: null, checkOutAt: null },
   ],
   summary: { month: new Date().getMonth() + 1, year: new Date().getFullYear(), scheduleCount: 2, presentCount: 0, lateCount: 0, earlyLeaveCount: 0, overtimeCount: 0, absentCount: 0, workingMinutes: 0 },
+  leaveBalance: { year: new Date().getFullYear(), annualAllowance: 12, usedDays: 0, pendingDays: 0, remainingDays: 12 },
 }
 
 const filters = [
@@ -153,6 +154,7 @@ export function EmployeePortalPage() {
 
   const schedules = overview.schedules
   const summary = overview.summary
+  const leaveBalance = overview.leaveBalance
   const latestPayroll = payrolls[0] ?? null
   const todayKey = new Date().toISOString().slice(0, 10)
   const upcomingSchedules = useMemo(() => schedules.filter((item) => item.scheduleDate.slice(0, 10) >= todayKey), [schedules, todayKey])
@@ -355,6 +357,7 @@ export function EmployeePortalPage() {
     { title: 'Tăng ca', value: String(summary.overtimeCount), hint: 'Phát sinh trong kỳ', icon: <TimerReset size={18} /> },
     { title: 'Tổng công', value: workingLabel(summary.workingMinutes), hint: 'Tổng giờ làm', icon: <ReceiptText size={18} /> },
   ]
+  stats.push({ title: 'Phep con lai', value: `${leaveBalance.remainingDays}/${leaveBalance.annualAllowance}`, hint: `Nam ${leaveBalance.year}`, icon: <CalendarOff size={18} /> })
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-6 md:py-8">
