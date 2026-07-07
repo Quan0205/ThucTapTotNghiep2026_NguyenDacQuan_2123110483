@@ -159,3 +159,34 @@ export function RequirePermission({
 
   return <>{children}</>
 }
+
+export function RequireEmployeePortal({ children, redirectTo = paths.userLogin }: { children: ReactNode; redirectTo?: string }) {
+  const auth = useAuth()
+  const location = useLocation()
+  const [isClearingAdminSession, setIsClearingAdminSession] = useState(false)
+
+  useEffect(() => {
+    if (!auth.isLoading && auth.isAuthenticated && auth.user?.systemRoleCode === 'ADMIN') {
+      setIsClearingAdminSession(true)
+      void auth.signOut().finally(() => setIsClearingAdminSession(false))
+    }
+  }, [auth])
+
+  if (auth.isLoading || isClearingAdminSession) {
+    return <div className="min-h-screen bg-slate-50" />
+  }
+
+  if (!auth.isAuthenticated) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />
+  }
+
+  if (auth.user?.systemRoleCode === 'ADMIN') {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />
+  }
+
+  if (!auth.hasAnyPermission(['self.shift.view'])) {
+    return <Navigate to="/forbidden" replace state={{ from: location }} />
+  }
+
+  return <>{children}</>
+}

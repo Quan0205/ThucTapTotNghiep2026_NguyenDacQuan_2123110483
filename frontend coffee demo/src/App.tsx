@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AuthProvider, RequireAuth, RequirePermission } from './auth/AuthProvider'
+import { AuthProvider, RequireAuth, RequireEmployeePortal, RequirePermission } from './auth/AuthProvider'
 import { AppShell } from './components/layout/AppShell'
 import { paths } from './config/paths'
 import { routes as adminRoutes } from './config/routes'
@@ -22,9 +22,9 @@ function App() {
           <Route
             path={paths.employeePortal}
             element={
-              <RequirePermission redirectTo={paths.userLogin} permissions={['self.shift.view']}>
+              <RequireEmployeePortal redirectTo={paths.userLogin}>
                 <EmployeePortalPage />
-              </RequirePermission>
+              </RequireEmployeePortal>
             }
           />
 

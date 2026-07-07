@@ -25,11 +25,33 @@ public sealed class RolePermissionService : IRolePermissionService
             return new List<string>();
         }
 
-        return await _context.SystemRolePermissions
+        var permissions = await _context.SystemRolePermissions
             .Where(x => x.SystemRoleId == account.SystemRoleId.Value)
             .Include(x => x.Permission)
             .Where(x => x.Permission != null)
             .Select(x => x.Permission!.Code)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (permissions.Count > 0)
+        {
+            return permissions;
+        }
+
+        var systemRoleCode = account.SystemRole?.Code
+            ?? await _context.SystemRoles
+                .Where(x => x.Id == account.SystemRoleId.Value)
+                .Select(x => x.Code)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        if (!string.Equals(systemRoleCode, "ADMIN", StringComparison.OrdinalIgnoreCase))
+        {
+            return permissions;
+        }
+
+        return await _context.Permissions
+            .Where(x => !x.IsDeleted)
+            .Select(x => x.Code)
             .Distinct()
             .ToListAsync(cancellationToken);
     }

@@ -30,10 +30,10 @@ const loginCopy = {
   user: {
     title: 'Đăng nhập nhân viên',
     eyebrow: 'CoffeeHRM user space',
-    description: 'Dành cho nhân viên và người dùng nội bộ để vào khu vực người dùng tại localhost.',
-    sampleTitle: 'Lưu ý',
-    sampleUsername: 'Tài khoản nhân viên',
-    samplePassword: 'Do quản trị tạo',
+    description: 'Dành cho nhân viên xem lịch làm, chấm công, lương cá nhân và các yêu cầu tự phục vụ.',
+    sampleTitle: 'Tài khoản demo',
+    sampleUsername: 'employee',
+    samplePassword: 'employee123',
     primaryCta: 'Đăng nhập nhân viên',
     destination: paths.employeePortal,
     fallbackDestination: paths.employeePortal,
@@ -53,8 +53,8 @@ export function LoginPage({ mode }: Props) {
   const navigate = useNavigate()
   const location = useLocation()
   const copy = loginCopy[mode]
-  const [username, setUsername] = useState(mode === 'admin' ? 'admin' : '')
-  const [password, setPassword] = useState(mode === 'admin' ? 'admin123' : '')
+  const [username, setUsername] = useState(mode === 'admin' ? 'admin' : 'employee')
+  const [password, setPassword] = useState(mode === 'admin' ? 'admin123' : 'employee123')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const loginDestination = mode === 'admin' ? paths.adminDashboard : paths.employeePortal
@@ -104,6 +104,12 @@ export function LoginPage({ mode }: Props) {
       if (mode === 'admin' && !hasAdminAccess(permissions)) {
         await auth.signOut()
         setError('Tài khoản này chưa có quyền vào khu vực quản trị.')
+        return
+      }
+
+      if (mode === 'user' && session.user.systemRoleCode === 'ADMIN') {
+        await auth.signOut()
+        setError('Tài khoản admin chỉ dùng cho trang quản trị. Hãy dùng employee / employee123 để xem trang nhân viên.')
         return
       }
 
